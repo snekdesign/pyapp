@@ -279,7 +279,10 @@ pub fn external_pip_zipapp() -> PathBuf {
 
 pub fn managed_uv() -> PathBuf {
     let uv_artifact_name = uv_artifact_name();
-    let filename = if uv_artifact_name.ends_with(".zip") {
+    let filename = if uv_artifact_name.ends_with(".whl")
+        && uv_artifact_name.contains("-py3-none-win")
+        || uv_artifact_name.ends_with(".zip")
+    {
         "uv.exe".to_string()
     } else {
         "uv".to_string()

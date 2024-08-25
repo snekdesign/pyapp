@@ -17,7 +17,11 @@ rust = '>=1.75.0'
 rust = '1.75.0'
 
 [tasks.test]
-depends-on = ['test_python_build_standalone', 'test_python_windows']
+depends-on = [
+    'test_python_build_standalone',
+    'test_python_windows',
+    'test_uv_wheel',
+]
 
 [target.win-64.tasks.test_python_build_standalone]
 cmd = """
@@ -31,6 +35,12 @@ cargo build --locked --release --target-dir target/python_windows && \
 target/python_windows/release/deps/pyapp \
 """
 
+[target.win-64.tasks.test_uv_wheel]
+cmd = """
+cargo build --locked --release --target-dir target/uv_wheel && \
+target/uv_wheel/release/deps/pyapp \
+"""
+
 [target.win-64.tasks.test_python_build_standalone.env]
 PYAPP_PROJECT_NAME = 'test'
 PYAPP_PROJECT_VERSION = '0.0.1'
@@ -38,8 +48,7 @@ PYAPP_PROJECT_DEPENDENCY_FILE = '$PIXI_PROJECT_ROOT/test_data/requirements.txt'
 PYAPP_EXEC_CODE = "import sys;print('Python',sys.version,'on',sys.platform)"
 PYAPP_DISTRIBUTION_SOURCE = 'https://api.github.com/repos/indygreg/python-build-standalone/releases/assets/181895721'
 PYAPP_DISTRIBUTION_FORMAT = 'tar|gzip'
-PYAPP_DISTRIBUTION_PYTHON_PATH = 'python\python.exe'
-PYAPP_DISTRIBUTION_SITE_PACKAGES_PATH = 'python\Lib\site-packages'
+PYAPP_DISTRIBUTION_PATH_PREFIX = 'python'
 
 [target.win-64.tasks.test_python_windows.env]
 PYAPP_PROJECT_NAME = 'test'
@@ -50,3 +59,12 @@ PYAPP_DISTRIBUTION_SOURCE = 'https://api.github.com/repos/adang1345/PythonWindow
 PYAPP_DISTRIBUTION_PIP_AVAILABLE = '1'
 PYAPP_FULL_ISOLATION = '1'
 PYAPP_PIP_EXTERNAL = '1'
+
+[target.win-64.tasks.test_uv_wheel.env]
+PYAPP_PROJECT_NAME = 'test'
+PYAPP_PROJECT_VERSION = '0.0.1'
+PYAPP_PROJECT_DEPENDENCY_FILE = '$PIXI_PROJECT_ROOT/test_data/requirements.txt'
+PYAPP_EXEC_CODE = "import sys;print('Python',sys.version,'on',sys.platform)"
+PYAPP_DISTRIBUTION_SOURCE = 'https://mirrors.huaweicloud.com/python/3.9.13/python-3.9.13-embed-amd64.zip'
+PYAPP_UV_ENABLED = '1'
+PYAPP_UV_SOURCE = 'https://mirrors.huaweicloud.com/repository/pypi/packages/67/be/fb8dd066fe77f537dbe869c413d2fbc329d60205830110e79edbd0cbd10e/uv-0.3.3-py3-none-win_amd64.whl'

@@ -1,5 +1,5 @@
 use std::env;
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::fs;
 use std::io::Write;
 use std::path::Path;
@@ -496,7 +496,7 @@ fn ensure_uv_available() -> Result<()> {
 
     network::download(&app::uv_source(), &mut f, "UV")?;
 
-    if artifact_name.ends_with(".zip") {
+    if artifact_name.ends_with(".whl") || artifact_name.ends_with(".zip") {
         compression::unpack_zip(temp_path, dir.path(), "Unpacking UV".to_string())
     } else {
         compression::unpack_tar_gzip(temp_path, dir.path(), "Unpacking UV".to_string())
@@ -505,7 +505,27 @@ fn ensure_uv_available() -> Result<()> {
         bail!("unable to unpack to {}\n{}", dir.path().display(), err);
     })?;
 
-    let uv_file_name = managed_uv.file_name().unwrap();
+    let nested_uv = if artifact_name.ends_with(".whl") {
+        let uv_pkg_version = artifact_name.get(
+            3..artifact_name.find("-py3-none-").unwrap(),
+        ).unwrap();
+
+        let uv_scripts = if artifact_name.contains("-py3-none-win") {
+            format!(r"uv-{}.data\scripts\uv.exe", uv_pkg_version)
+        } else {
+            format!("uv-{}.data/scripts/uv", uv_pkg_version)
+        };
+
+        OsString::from(uv_scripts)
+    } else {
+        OsString::new()
+    };
+
+    let uv_file_name = if artifact_name.ends_with(".whl") {
+        nested_uv.as_os_str()
+    } else {
+        managed_uv.file_name().unwrap()
+    };
     let mut binary_path = dir.path().join(uv_file_name);
 
     // Binary is nested in a directory with the same name as the artifact stem
@@ -514,6 +534,7 @@ fn ensure_uv_available() -> Result<()> {
             .path()
             .join(
                 artifact_name
+                    .trim_end_matches(".whl")
                     .trim_end_matches(".zip")
                     .trim_end_matches(".tar.gz"),
             )
