@@ -24,41 +24,22 @@ PYAPP_EXEC_CODE = "import sys;print('Python',sys.version,'on',sys.platform)"
 
 [tasks.test]
 depends-on = [
-    'test_mamba',
-    'test_python_build_standalone',
-    'test_python_windows',
-    'test_uv_wheel',
+    'test_common',
+    'test_windows_10_11',
 ]
 
-[target.win-64.tasks.test_mamba]
+[target.win-64.tasks.test_common]
 cmd = 'cargo run --locked --release'
 
-[target.win-64.tasks.test_python_build_standalone]
+[target.win-64.tasks.test_windows_10_11]
 cmd = 'cargo run --locked --release'
 
-[target.win-64.tasks.test_python_windows]
-cmd = 'cargo run --locked --release'
-
-[target.win-64.tasks.test_uv_wheel]
-cmd = 'cargo run --locked --release'
-
-[target.win-64.tasks.test_mamba.env]
+[target.win-64.tasks.test_common.env]
 PYAPP_DISTRIBUTION_SOURCE = 'https://mirrors.cernet.edu.cn/anaconda/cloud/conda-forge/win-64/micromamba-1.5.8-0.tar.bz2'
 PYAPP_FULL_ISOLATION = '1'
 PYAPP_MAMBA_DEPENDENCY_FILE = '$PIXI_PROJECT_ROOT\test_data\explicit_win-64.txt'
 
-[target.win-64.tasks.test_python_build_standalone.env]
-PYAPP_DISTRIBUTION_SOURCE = 'https://api.github.com/repos/indygreg/python-build-standalone/releases/assets/181895721'
-PYAPP_DISTRIBUTION_FORMAT = 'tar|gzip'
-PYAPP_DISTRIBUTION_PATH_PREFIX = 'python'
-
-[target.win-64.tasks.test_python_windows.env]
-PYAPP_DISTRIBUTION_SOURCE = 'https://api.github.com/repos/adang1345/PythonWindows/contents/3.8.19/python-3.8.19-embed-amd64.zip'
-PYAPP_DISTRIBUTION_PIP_AVAILABLE = '1'
-PYAPP_FULL_ISOLATION = '1'
-PYAPP_PIP_EXTERNAL = '1'
-
-[target.win-64.tasks.test_uv_wheel.env]
-PYAPP_DISTRIBUTION_SOURCE = 'https://mirrors.huaweicloud.com/python/3.9.13/python-3.9.13-embed-amd64.zip'
+[target.win-64.tasks.test_windows_10_11.env]
+PYAPP_DISTRIBUTION_SOURCE = 'https://api.github.com/repos/adang1345/PythonWindows/contents/3.9.19/python-3.9.19-embed-amd64.zip'
 PYAPP_UV_ENABLED = '1'
-PYAPP_UV_SOURCE = 'https://mirrors.huaweicloud.com/repository/pypi/packages/67/be/fb8dd066fe77f537dbe869c413d2fbc329d60205830110e79edbd0cbd10e/uv-0.3.3-py3-none-win_amd64.whl'
+PYAPP_UV_SOURCE = 'https://mirrors.huaweicloud.com/repository/pypi/packages/d6/c2/7219ee34993c50b3fedd81a7d77f27232df0bcf5451920dd16717fcc9b1f/uv-0.4.0-py3-none-win_amd64.whl'

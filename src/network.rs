@@ -12,26 +12,17 @@ pub fn download(url: &String, writer: impl Write, description: &str) -> Result<(
         USER_AGENT,
         HeaderValue::from_static("rust-reqwest/0.12.4"),
     );
-    if normalized_url.starts_with("https://api.github.com/repos/") {
+    if normalized_url.starts_with(
+        "https://api.github.com/repos/adang1345/pythonwindows/contents/3.",
+    ) {
+        headers.insert(
+            ACCEPT,
+            HeaderValue::from_static("application/vnd.github.raw+json"),
+        );
         headers.insert(
             HeaderName::from_static("x-github-api-version"),
             HeaderValue::from_static("2022-11-28"),
         );
-        if normalized_url.starts_with(
-            "https://api.github.com/repos/adang1345/pythonwindows/contents/3.",
-        ) {
-            headers.insert(
-                ACCEPT,
-                HeaderValue::from_static("application/vnd.github.raw+json"),
-            );
-        } else if normalized_url.starts_with(
-            "https://api.github.com/repos/indygreg/python-build-standalone/releases/assets/",
-        ) {
-            headers.insert(
-                ACCEPT,
-                HeaderValue::from_static("application/octet-stream"),
-            );
-        }
     }
 
     let mut response = reqwest::blocking::Client::new()
