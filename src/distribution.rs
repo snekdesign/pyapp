@@ -62,16 +62,40 @@ fn apply_env_vars(command: &mut Command) {
 }
 
 pub fn python_command(python: &impl AsRef<OsStr>) -> Command {
-    let mut command = Command::new(python);
+    let mut command = if app::mamba_dependency_file().is_empty() {
+        Command::new(python)
+    } else {
+        let mut command = mamba_command();
+        command.arg("run");
+        command.arg(python);
+        command
+    };
     apply_env_vars(&mut command);
     command.arg(app::python_isolation_flag());
 
     command
 }
 
-fn mamba_command(mamba: &impl AsRef<OsStr>) -> Command {
+fn mamba_command() -> Command {
+    let mamba = if app::distribution_source().contains("/win-64/micromamba-") {
+        app::distributions_cache()
+            .join(format!("_{}", app::distribution_id()))
+            .join("Library")
+            .join("bin")
+            .join("micromamba.exe")
+    } else {
+        app::distributions_cache()
+            .join(format!("_{}", app::distribution_id()))
+            .join("bin")
+            .join("micromamba")
+    };
     let mut command = Command::new(mamba);
-    apply_env_vars(&mut command);
+    command.args([
+        "--no-env",
+        "--no-rc",
+        "-p", app::install_dir().to_str().unwrap(),
+        "-r", app::mamba_cache().to_str().unwrap(),
+    ]);
 
     command
 }
@@ -255,21 +279,8 @@ pub fn materialize() -> Result<()> {
             })?;
         }
 
-        let mamba_path = if app::distribution_source().contains("/win-64/micromamba-") {
-            unpacked_distribution.join("Library").join("bin").join("micromamba.exe")
-        } else {
-            unpacked_distribution.join("bin").join("micromamba")
-        };
-        let mut command = mamba_command(&mamba_path);
-        command.args([
-            "create",
-            "--no-env",
-            "--no-rc",
-            "--no-shortcuts",
-            "-p", app::install_dir().to_str().unwrap(),
-            "-r", app::mamba_cache().to_str().unwrap(),
-            "-y",
-        ]);
+        let mut command = mamba_command();
+        command.args(["create", "--no-shortcuts", "-y"]);
         mamba_install_dependency_file(
             &app::mamba_dependency_file(),
             command,
