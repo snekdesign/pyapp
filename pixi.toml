@@ -24,10 +24,14 @@ PYAPP_EXEC_CODE = "import sys;print('Python',sys.version,'on',sys.platform)"
 
 [tasks.test]
 depends-on = [
+    'test_mamba',
     'test_python_build_standalone',
     'test_python_windows',
     'test_uv_wheel',
 ]
+
+[target.win-64.tasks.test_mamba]
+cmd = 'cargo run --locked --release'
 
 [target.win-64.tasks.test_python_build_standalone]
 cmd = 'cargo run --locked --release'
@@ -37,6 +41,11 @@ cmd = 'cargo run --locked --release'
 
 [target.win-64.tasks.test_uv_wheel]
 cmd = 'cargo run --locked --release'
+
+[target.win-64.tasks.test_mamba.env]
+PYAPP_DISTRIBUTION_SOURCE = 'https://mirrors.cernet.edu.cn/anaconda/cloud/conda-forge/win-64/micromamba-1.5.8-0.tar.bz2'
+PYAPP_FULL_ISOLATION = '1'
+PYAPP_MAMBA_DEPENDENCY_FILE = '$PIXI_PROJECT_ROOT\test_data\explicit_win-64.txt'
 
 [target.win-64.tasks.test_python_build_standalone.env]
 PYAPP_DISTRIBUTION_SOURCE = 'https://api.github.com/repos/indygreg/python-build-standalone/releases/assets/181895721'

@@ -69,6 +69,13 @@ pub fn python_command(python: &impl AsRef<OsStr>) -> Command {
     command
 }
 
+fn mamba_command(mamba: &impl AsRef<OsStr>) -> Command {
+    let mut command = Command::new(mamba);
+    apply_env_vars(&mut command);
+
+    command
+}
+
 fn uv_command() -> Command {
     let mut command = Command::new(app::managed_uv());
     apply_env_vars(&mut command);
@@ -230,7 +237,49 @@ pub fn materialize() -> Result<()> {
         fs_utils::move_temp_file(&temp_path, &distribution_file)?;
     }
 
-    if app::full_isolation() {
+    if !app::mamba_dependency_file().is_empty() {
+        let unpacked_distribution = distributions_dir.join(format!("_{}", app::distribution_id()));
+        if !unpacked_distribution.is_dir() {
+            compression::unpack(
+                app::distribution_format(),
+                &distribution_file,
+                &unpacked_distribution,
+            )
+            .or_else(|err| {
+                fs::remove_dir_all(&unpacked_distribution).ok();
+                bail!(
+                    "unable to unpack to {}\n{}",
+                    &unpacked_distribution.display(),
+                    err
+                );
+            })?;
+        }
+
+        let mamba_path = if app::distribution_source().contains("/win-64/micromamba-") {
+            unpacked_distribution.join("Library").join("bin").join("micromamba.exe")
+        } else {
+            unpacked_distribution.join("bin").join("micromamba")
+        };
+        let mut command = mamba_command(&mamba_path);
+        command.args([
+            "create",
+            "--no-env",
+            "--no-rc",
+            "--no-shortcuts",
+            "-p", app::install_dir().to_str().unwrap(),
+            "-r", app::mamba_cache().to_str().unwrap(),
+            "-y",
+        ]);
+        mamba_install_dependency_file(
+            &app::mamba_dependency_file(),
+            command,
+            format!("Installing {} {}", app::project_name(), app::project_version()),
+        )?;
+
+        if !app::skip_install() {
+            ensure_base_pip(app::install_dir())?;
+        }
+    } else if app::full_isolation() {
         compression::unpack(
             app::distribution_format(),
             &distribution_file,
@@ -401,6 +450,29 @@ pub fn pip_install_dependency_file(
     command.args(["-r", temp_path.to_string_lossy().as_ref()]);
 
     ensure_installer_available()?;
+    run_setup_command(command, wait_message)
+}
+
+fn mamba_install_dependency_file(
+    dependency_file: &String,
+    mut command: Command,
+    wait_message: String,
+) -> Result<(ExitStatus, String)> {
+    let dir = tempdir().with_context(|| "unable to create temporary directory")?;
+    let file_name = app::mamba_dependency_file_name();
+    let temp_path = dir.path().join(file_name);
+
+    let mut f = fs::File::create(&temp_path)
+        .with_context(|| format!("unable to create temporary file: {}", &temp_path.display()))?;
+    f.write(dependency_file.as_bytes()).with_context(|| {
+        format!(
+            "unable to write dependency file to temporary file: {}",
+            &temp_path.display()
+        )
+    })?;
+
+    command.args(["-f", temp_path.to_str().unwrap()]);
+
     run_setup_command(command, wait_message)
 }
 

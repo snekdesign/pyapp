@@ -128,6 +128,14 @@ pub fn project_dependency_file_name() -> String {
     env!("PYAPP__PROJECT_DEPENDENCY_FILE_NAME").into()
 }
 
+pub fn mamba_dependency_file() -> String {
+    decode_option(env!("PYAPP_MAMBA_DEPENDENCY_FILE"))
+}
+
+pub fn mamba_dependency_file_name() -> String {
+    env!("PYAPP__MAMBA_DEPENDENCY_FILE_NAME").into()
+}
+
 pub fn project_embed_file_name() -> String {
     env!("PYAPP__PROJECT_EMBED_FILE_NAME").into()
 }
@@ -261,6 +269,10 @@ pub fn distributions_cache() -> PathBuf {
 
 pub fn external_pip_cache() -> PathBuf {
     cache_dir().join("pip")
+}
+
+pub fn mamba_cache() -> PathBuf {
+    cache_dir().join("mamba")
 }
 
 pub fn managed_uv_cache() -> PathBuf {

@@ -436,6 +436,30 @@ fn set_project_dependency_file(dependency_file: &str) {
     set_runtime_variable("PYAPP__PROJECT_DEPENDENCY_FILE_NAME", file_name);
 }
 
+fn set_mamba_dependency_file() {
+    let dependency_file = env::var("PYAPP_MAMBA_DEPENDENCY_FILE").unwrap_or_default();
+    if dependency_file.is_empty() {
+        set_runtime_variable("PYAPP_MAMBA_DEPENDENCY_FILE", "");
+        set_runtime_variable("PYAPP__MAMBA_DEPENDENCY_FILE_NAME", "");
+        return;
+    }
+
+    let path = PathBuf::from(&dependency_file);
+    if !path.is_file() {
+        panic!("\n\nDependency file is not a file: {dependency_file}\n\n");
+    }
+
+    let file_name = path.file_name().unwrap().to_str().unwrap();
+    let contents = fs::read_to_string(&dependency_file)
+        .unwrap_or_else(|_| panic!("\n\nFailed to read dependency file {dependency_file}\n\n"));
+
+    set_runtime_variable(
+        "PYAPP_MAMBA_DEPENDENCY_FILE",
+        STANDARD_NO_PAD.encode(contents),
+    );
+    set_runtime_variable("PYAPP__MAMBA_DEPENDENCY_FILE_NAME", file_name);
+}
+
 fn set_project() {
     let embed_path = embed_file("project");
     let local_path = env::var("PYAPP_PROJECT_PATH").unwrap_or_default();
@@ -1095,6 +1119,7 @@ fn set_metadata_template() {
 
 fn main() {
     set_project();
+    set_mamba_dependency_file();
     set_distribution();
     set_execution_mode();
     set_is_gui();
