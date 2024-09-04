@@ -15,3 +15,4 @@ https://mirrors.cernet.edu.cn/anaconda/cloud/conda-forge/win-64/vc-14.3-h8a93ad2
 https://mirrors.cernet.edu.cn/anaconda/cloud/conda-forge/win-64/vs2015_runtime-14.40.33810-h3bf8584_20.conda#c21f1b4a3a30bbc3ef35a50957578e0e
 https://mirrors.cernet.edu.cn/anaconda/cloud/conda-forge/win-64/vc14_runtime-14.40.33810-hcc2c482_20.conda#ad33c7cd933d69b9dee0f48317cdf137
 https://mirrors.cernet.edu.cn/anaconda/cloud/conda-forge/win-64/ucrt-10.0.22621.0-h57928b3_0.tar.bz2#72608f6cd3e5898229c3ea16deb1ac43
+file://../../test_data/noarch/nomkl-1.0-h5ca1d4c_0.tar.bz2#9a66894dfd07c4510beb6b3f9672ccc0

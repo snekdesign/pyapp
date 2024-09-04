@@ -281,6 +281,7 @@ pub fn materialize() -> Result<()> {
 
         let mut command = mamba_command();
         command.args(["create", "--no-shortcuts", "-y"]);
+        command.current_dir(env::current_exe().unwrap().parent().unwrap());
         mamba_install_dependency_file(
             &app::mamba_dependency_file(),
             command,

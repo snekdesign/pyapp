@@ -18,7 +18,7 @@ rust = '1.75.0'
 
 [target.win-64.activation.env]
 PYAPP_PROJECT_NAME = 'test'
-PYAPP_PROJECT_VERSION = '0.0.1'
+PYAPP_PROJECT_VERSION = '0.0.2'
 PYAPP_PROJECT_DEPENDENCY_FILE = '%PIXI_PROJECT_ROOT%\test_data\requirements.txt'
 PYAPP_EXEC_CODE = "import sys;print('Python',sys.version,'on',sys.platform)"
 
