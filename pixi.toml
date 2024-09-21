@@ -18,7 +18,7 @@ rust = '1.75.0'
 
 [target.win-64.activation.env]
 PYAPP_PROJECT_NAME = 'test'
-PYAPP_PROJECT_VERSION = '0.0.2'
+PYAPP_PROJECT_VERSION = '0.0.3'
 PYAPP_PROJECT_DEPENDENCY_FILE = '%PIXI_PROJECT_ROOT%\test_data\requirements.txt'
 PYAPP_EXEC_CODE = "import sys;print('Python',sys.version,'on',sys.platform)"
 
@@ -38,8 +38,10 @@ cmd = 'cargo run --locked --release'
 PYAPP_DISTRIBUTION_SOURCE = 'https://mirrors.cernet.edu.cn/anaconda/cloud/conda-forge/win-64/micromamba-1.5.8-0.tar.bz2'
 PYAPP_FULL_ISOLATION = '1'
 PYAPP_MAMBA_DEPENDENCY_FILE = '$PIXI_PROJECT_ROOT\test_data\explicit_win-64.txt'
+PYAPP_UV_ENABLED = '1'
+PYAPP_UV_SOURCE = 'https://mirrors.huaweicloud.com/repository/pypi/packages/6b/2d/d90773dde0f68ca7e14419ad4e8716fb87490659485d125ed76861d1aa12/uv-0.1.6-py3-none-win_amd64.whl'
 
 [target.win-64.tasks.test_windows_10_11.env]
-PYAPP_DISTRIBUTION_SOURCE = 'https://api.github.com/repos/adang1345/PythonWindows/contents/3.9.19/python-3.9.19-embed-amd64.zip'
+PYAPP_DISTRIBUTION_SOURCE = 'https://api.github.com/repos/adang1345/PythonWindows/contents/3.9.20/python-3.9.20-embed-amd64.zip'
 PYAPP_UV_ENABLED = '1'
-PYAPP_UV_SOURCE = 'https://mirrors.huaweicloud.com/repository/pypi/packages/d6/c2/7219ee34993c50b3fedd81a7d77f27232df0bcf5451920dd16717fcc9b1f/uv-0.4.0-py3-none-win_amd64.whl'
+PYAPP_UV_SOURCE = 'https://mirrors.huaweicloud.com/repository/pypi/packages/de/0e/9c2ce0dbe575a89173c53aef19e822dd4ed2f9dc7cb3a305c25bb83ed54e/uv-0.4.14-py3-none-win_amd64.whl'

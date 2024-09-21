@@ -101,7 +101,14 @@ fn mamba_command() -> Command {
 }
 
 fn uv_command() -> Command {
-    let mut command = Command::new(app::managed_uv());
+    let mut command = if app::mamba_dependency_file().is_empty() {
+        Command::new(app::managed_uv())
+    } else {
+        let mut command = mamba_command();
+        command.arg("run");
+        command.arg(app::managed_uv());
+        command
+    };
     apply_env_vars(&mut command);
 
     command
