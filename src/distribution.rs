@@ -227,6 +227,7 @@ pub fn pip_install_command() -> Command {
             .filter(|s| !s.is_empty())
             .collect::<Vec<&str>>(),
     );
+    command.current_dir(env::current_exe().unwrap().parent().unwrap());
 
     command
 }
