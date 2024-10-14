@@ -1,6 +1,6 @@
 [package]
 name = "pyapp"
-version = "0.23.0"
+version = "0.24.0"
 description = "Runtime installer for Python applications"
 repository = "https://github.com/ofek/pyapp"
 documentation = "https://ofek.dev/pyapp/"
@@ -51,6 +51,8 @@ passthrough = [
   "PYAPP_DISTRIBUTION_SITE_PACKAGES_PATH",
   "PYAPP_DISTRIBUTION_SOURCE",
   "PYAPP_DISTRIBUTION_VARIANT",
+  "PYAPP_DISTRIBUTION_VARIANT_CPU",
+  "PYAPP_DISTRIBUTION_VARIANT_GIL",
   "PYAPP_EXEC_CODE",
   "PYAPP_EXEC_MODULE",
   "PYAPP_EXEC_NOTEBOOK",
