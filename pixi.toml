@@ -10,38 +10,32 @@ platforms = [
     'win-64',
 ]
 
-[dependencies]
+[environments.build]
+features = ['build']
+
+[feature.build.dependencies]
 rust = '>=1.75.0'
 
-[target.win-64.dependencies]
+[feature.build.target.win-64.dependencies]
 rust = '1.75.0'
 
-[target.win-64.activation.env]
-PYAPP_PROJECT_NAME = 'test'
-PYAPP_PROJECT_VERSION = '0.0.3'
-PYAPP_PROJECT_DEPENDENCY_FILE = '%PIXI_PROJECT_ROOT%\test_data\requirements.txt'
+[feature.build.target.win-64.tasks.test]
+cmd = 'cargo run --locked --release'
+
+[feature.build.target.win-64.tasks.test.env]
+PYAPP_DISTRIBUTION_SOURCE = 'https://mirrors.cernet.edu.cn/anaconda/cloud/conda-forge/win-64/micromamba-1.5.0-1.tar.bz2'
 PYAPP_EXEC_CODE = "import sys;print('Python',sys.version,'on',sys.platform)"
-
-[tasks.test]
-depends-on = [
-    'test_common',
-    'test_windows_10_11',
-]
-
-[target.win-64.tasks.test_common]
-cmd = 'cargo run --locked --release'
-
-[target.win-64.tasks.test_windows_10_11]
-cmd = 'cargo run --locked --release'
-
-[target.win-64.tasks.test_common.env]
-PYAPP_DISTRIBUTION_SOURCE = 'https://mirrors.cernet.edu.cn/anaconda/cloud/conda-forge/win-64/micromamba-1.5.8-0.tar.bz2'
 PYAPP_FULL_ISOLATION = '1'
-PYAPP_MAMBA_DEPENDENCY_FILE = '$PIXI_PROJECT_ROOT\test_data\explicit_win-64.txt'
-PYAPP_UV_ENABLED = '1'
-PYAPP_UV_SOURCE = 'https://mirrors.huaweicloud.com/repository/pypi/packages/6b/2d/d90773dde0f68ca7e14419ad4e8716fb87490659485d125ed76861d1aa12/uv-0.1.6-py3-none-win_amd64.whl'
+PYAPP_MAMBA_DEPENDENCY_FILE = '$PIXI_PROJECT_ROOT\test_data\test_win-64_conda_spec.txt'
+PYAPP_PROJECT_DEPENDENCY_FILE = '$PIXI_PROJECT_ROOT\test_data\requirements.txt'
+PYAPP_PROJECT_NAME = 'test'
+PYAPP_PROJECT_VERSION = '0.0.4'
 
-[target.win-64.tasks.test_windows_10_11.env]
-PYAPP_DISTRIBUTION_SOURCE = 'https://api.github.com/repos/adang1345/PythonWindows/contents/3.9.20/python-3.9.20-embed-amd64.zip'
-PYAPP_UV_ENABLED = '1'
-PYAPP_UV_SOURCE = 'https://mirrors.huaweicloud.com/repository/pypi/packages/de/0e/9c2ce0dbe575a89173c53aef19e822dd4ed2f9dc7cb3a305c25bb83ed54e/uv-0.4.14-py3-none-win_amd64.whl'
+[environments.test]
+features = ['test']
+
+[feature.test.dependencies]
+python = '>=3.8.20'
+
+[feature.test.target.win-64.dependencies]
+python = '3.8.20'
