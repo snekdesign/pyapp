@@ -38,6 +38,7 @@ zip = "2.2.0"
 panic = "abort"
 strip = true
 codegen-units = 1
+lto = "fat"
 
 [package.metadata.cross.build.env]
 passthrough = [
