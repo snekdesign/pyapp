@@ -1186,6 +1186,7 @@ fn set_metadata_template() {
 }
 
 fn main() {
+    tauri_build::build();
     set_project();
     set_mamba_dependency_file();
     set_distribution();

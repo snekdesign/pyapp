@@ -168,8 +168,12 @@ pub fn run_project() -> Result<()> {
     }
     command.args(env::args().skip(1));
 
-    process::exec(command)
-        .with_context(|| "project execution failed, consider restoring from scratch")
+    command.spawn()
+        .with_context(|| "project execution failed, consider restoring from scratch")?;
+
+    tauri::Builder::default()
+        .run(tauri::generate_context!())
+        .with_context(|| "error while running tauri application")
 }
 
 pub fn ensure_ready() -> Result<()> {
