@@ -13,7 +13,7 @@ pub fn download(url: &String, writer: impl Write, description: &str) -> Result<(
         HeaderValue::from_static("rust-reqwest/0.12.12"),
     );
     if normalized_url.starts_with(
-        "https://api.github.com/repos/adang1345/pythonwindows/contents/3.",
+        "https://api.github.com/repos/adang1345/pythonwin",
     ) {
         headers.insert(
             ACCEPT,
