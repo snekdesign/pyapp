@@ -168,12 +168,16 @@ pub fn run_project() -> Result<()> {
     }
     command.args(env::args().skip(1));
 
-    command.spawn()
+    let mut child = command.spawn()
         .with_context(|| "project execution failed, consider restoring from scratch")?;
 
-    tauri::Builder::default()
-        .run(tauri::generate_context!())
-        .with_context(|| "error while running tauri application")
+    let app = tauri::Builder::default()
+        .build(tauri::generate_context!())
+        .with_context(|| "error while building tauri application")?;
+    app.run_return(|_app_handle, _event| {});
+
+    child.wait()?;
+    Ok(())
 }
 
 pub fn ensure_ready() -> Result<()> {
