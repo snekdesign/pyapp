@@ -16,11 +16,14 @@ features = ['build']
 [feature.build.dependencies]
 rust = '>=1.77.2'
 
+[feature.build.target.win-64.dependencies]
+rust = '==1.77.2'
+
 [feature.build.target.win-64.tasks.test]
 cmd = 'cargo run --locked --release'
 
 [feature.build.target.win-64.tasks.test.env]
-PYAPP_DISTRIBUTION_SOURCE = 'https://mirrors.cernet.edu.cn/anaconda/cloud/conda-forge/win-64/micromamba-2.0.5-0.tar.bz2'
+PYAPP_DISTRIBUTION_SOURCE = 'https://mirrors.cernet.edu.cn/anaconda/cloud/conda-forge/win-64/micromamba-2.0.5-1.tar.bz2'
 PYAPP_EXEC_CODE = "import runpy,sys;sys.argv[:]='streamlit','hello';runpy.run_module('streamlit',run_name='__main__')"
 PYAPP_FULL_ISOLATION = '1'
 PYAPP_MAMBA_DEPENDENCY_FILE = '$PIXI_PROJECT_ROOT\test_data\test_win-64_conda_spec.txt'
@@ -34,3 +37,8 @@ features = ['test']
 [feature.test.dependencies]
 python = '>=3.8.20'
 streamlit = '>=1.40.1'
+
+[feature.test.target.win-64.dependencies]
+pyarrow = '==16.1.0'
+python = '==3.8.20'
+streamlit = '==1.40.1'
