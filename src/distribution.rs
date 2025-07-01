@@ -7,6 +7,11 @@ use std::process::{exit, Command, ExitStatus};
 
 use anyhow::{bail, Context, Result};
 use fs4::fs_std::FileExt;
+use rattler_conda_types::Platform;
+use rattler_shell::{
+    activation::{ActivationVariables, Activator, PathModificationBehavior},
+    shell::ShellEnum,
+};
 use tempfile::tempdir;
 
 use crate::{app, compression, fs_utils, network, process};
@@ -20,25 +25,27 @@ const PATH_SEPARATOR: char = ':';
 fn apply_env_vars(command: &mut Command) {
     let python_path = app::python_path();
     let python_dir = python_path.parent().unwrap();
-    let exe_paths = if app::full_isolation() && cfg!(windows) {
-        format!(
-            "{}{}{}",
-            python_dir.to_string_lossy(),
-            PATH_SEPARATOR,
-            python_dir.join("Scripts").to_string_lossy(),
-        )
-    } else {
-        format!("{}", python_dir.to_string_lossy())
-    };
-    match env::var_os("PATH") {
-        Some(path) => {
-            command.env(
-                "PATH",
-                format!("{}{}{}", exe_paths, PATH_SEPARATOR, path.to_string_lossy()),
-            );
-        }
-        None => {
-            command.env("PATH", exe_paths);
+    if conda_activate(command).is_err() {
+        let exe_paths = if app::full_isolation() && cfg!(windows) {
+            format!(
+                "{}{}{}",
+                python_dir.to_string_lossy(),
+                PATH_SEPARATOR,
+                python_dir.join("Scripts").to_string_lossy(),
+            )
+        } else {
+            format!("{}", python_dir.to_string_lossy())
+        };
+        match env::var_os("PATH") {
+            Some(path) => {
+                command.env(
+                    "PATH",
+                    format!("{}{}{}", exe_paths, PATH_SEPARATOR, path.to_string_lossy()),
+                );
+            }
+            None => {
+                command.env("PATH", exe_paths);
+            }
         }
     }
 
@@ -59,6 +66,38 @@ fn apply_env_vars(command: &mut Command) {
     if !app::exposed_command().is_empty() {
         command.env("PYAPP_COMMAND_NAME", app::exposed_command());
     }
+}
+
+fn conda_activate(command: &mut Command) -> Result<()> {
+    if app::distribution_format() != "pixi.lock" {
+        bail!("not a conda environment")
+    }
+    let activator = if app::full_isolation() {
+        Activator::from_path(
+            app::install_dir(),
+            ShellEnum::default(),
+            Platform::current(),
+        )
+    } else {
+        Activator::from_path(
+            app::distributions_cache()
+                .join(format!("_{}", app::distribution_id()))
+                .as_ref(),
+            ShellEnum::default(),
+            Platform::current(),
+        )
+    }?;
+    let result = activator.run_activation(
+        ActivationVariables {
+            conda_prefix: None,
+            path: None,
+            path_modification_behavior: PathModificationBehavior::Prepend,
+        },
+        None,
+    )?;
+    command.envs(&result);
+
+    Ok(())
 }
 
 pub fn python_command(python: &impl AsRef<OsStr>) -> Command {
@@ -159,7 +198,7 @@ pub fn pip_base_command() -> Command {
         let mut command = python_command(&app::python_path());
         if app::pip_external() {
             let external_pip = app::external_pip_zipapp();
-            command.arg(external_pip.to_string_lossy().as_ref());
+            command.arg::<&str>(external_pip.to_string_lossy().as_ref());
         } else {
             command.args(["-m", "pip"]);
         }
@@ -188,6 +227,7 @@ pub fn pip_install_command() -> Command {
             .filter(|s| !s.is_empty())
             .collect::<Vec<&str>>(),
     );
+    command.current_dir(env::current_exe().unwrap().parent().unwrap());
 
     command
 }
@@ -310,7 +350,7 @@ pub fn materialize() -> Result<()> {
             command
         };
 
-        command.arg(app::install_dir().to_string_lossy().as_ref());
+        command.arg::<&str>(app::install_dir().to_string_lossy().as_ref());
         let (status, output) =
             run_setup_command(command, "Creating virtual environment".to_string())?;
         check_setup_status(status, output)?;
@@ -341,7 +381,7 @@ fn install_project() -> Result<()> {
         })?;
 
         command.arg(apply_project_features(
-            temp_path.to_string_lossy().as_ref().to_string(),
+            temp_path.to_string_lossy().into(),
         ));
 
         let wait_message = if binary_only && file_name.ends_with(".whl") {

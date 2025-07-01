@@ -11,7 +11,7 @@ use rand::distr::{Alphanumeric, SampleString};
 use regex::Regex;
 
 const DEFAULT_PYTHON_VERSION: &str = "3.13";
-const KNOWN_DISTRIBUTION_FORMATS: &[&str] = &["tar|bzip2", "tar|gzip", "tar|zstd", "zip"];
+const KNOWN_DISTRIBUTION_FORMATS: &[&str] = &["pixi.lock", "tar|bzip2", "tar|gzip", "tar|zstd", "zip"];
 const DEFAULT_CPYTHON_SOURCE: &str =
     "https://github.com/astral-sh/python-build-standalone/releases/download/";
 const DEFAULT_PYPY_SOURCE: &str = "https://downloads.python.org/pypy/";
@@ -667,6 +667,8 @@ fn set_distribution_format(distribution_source: &String) {
         } else {
             panic!("\n\nUnknown distribution format: {distribution_format}\n\n");
         }
+    } else if distribution_source.ends_with("pixi.lock") {
+        set_runtime_variable(variable, "pixi.lock");
     } else if distribution_source.ends_with(".tar.bz2") || distribution_source.ends_with(".bz2") {
         set_runtime_variable(variable, "tar|bzip2");
     } else if distribution_source.ends_with(".tar.gz") || distribution_source.ends_with(".tgz") {
@@ -690,7 +692,7 @@ fn set_python_path(distribution_source: &str) {
         normalize_relative_path(&python_path)
     } else if !env::var("PYAPP_DISTRIBUTION_PATH")
         .unwrap_or_default()
-        .is_empty()
+        .ends_with("pixi.lock")
     {
         panic!("\n\nThe following option must be set when embedding a custom distribution: {distribution_variable}\n\n");
     } else if distribution_source.starts_with(DEFAULT_CPYTHON_SOURCE) {
@@ -1171,6 +1173,7 @@ fn set_metadata_template() {
 }
 
 fn main() {
+    thunk::thunk();
     set_project();
     set_distribution();
     set_execution_mode();

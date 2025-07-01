@@ -1,0 +1,37 @@
+[project]
+name = "pyapp"
+channels = ["conda-forge"]
+platforms = [
+    "linux-64",
+    "linux-aarch64",
+    "osx-64",
+    "osx-arm64",
+    "win-64",
+]
+
+[dependencies]
+python = ">=3.8.0,<3.13.0a0"
+
+[target.win.dependencies]
+python = "3.8.*"
+
+[environments.rust]
+features = ["rust"]
+no-default-feature = true
+
+[feature.rust.dependencies]
+rust = ">=1.81.0"
+
+[feature.rust.target.linux-64.dependencies]
+gcc_linux-64 = "*"
+
+[feature.rust.target.linux-aarch64.dependencies]
+gcc_linux-aarch64 = "*"
+
+[feature.rust.tasks.cowsay]
+cmd = "cargo run --locked --release --"
+
+[feature.rust.tasks.cowsay.env]
+PYAPP_PROJECT_NAME = "cowsay"
+PYAPP_PROJECT_VERSION = "6.1"
+PYAPP_DISTRIBUTION_PATH = "$PIXI_PROJECT_ROOT/pixi.lock"
