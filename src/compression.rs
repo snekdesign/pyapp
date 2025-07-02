@@ -1,18 +1,17 @@
-use std::collections::HashMap;
 use std::fs::File;
 use std::path::Path;
 
 use anyhow::{anyhow, bail, Result};
+use async_trait::async_trait;
+use http::Extensions;
+use rand::{rng, prelude::IndexedRandom};
 use rattler::install::Installer;
 use rattler_conda_types::{Platform, RepoDataRecord};
 use rattler_lock::{
     CondaPackageData, DEFAULT_ENVIRONMENT_NAME, LockFile, LockedPackageRef, UrlOrPath,
 };
-use rattler_networking::{
-    MirrorMiddleware,
-    mirror_middleware::Mirror,
-};
-use reqwest_middleware::Error;
+use reqwest::{Request, Response};
+use reqwest_middleware::{Error, Middleware, Next};
 use reqwest_retry::{
     default_on_request_failure,
     default_on_request_success,
@@ -25,10 +24,34 @@ use url::Url;
 
 use crate::terminal;
 
+struct RandomMirrorMiddleware {
+    mirrors: Vec<Url>,
+}
+
+#[async_trait]
+impl Middleware for RandomMirrorMiddleware {
+    async fn handle(
+        &self,
+        mut req: Request,
+        extensions: &mut Extensions,
+        next: Next<'_>,
+    ) -> reqwest_middleware::Result<Response> {
+        let url_str = req.url().as_str();
+        if let Some(url_rest) = url_str.strip_prefix("https://conda.anaconda.org/") {
+            let url_rest = url_rest.trim_start_matches('/');
+            if let Some(selected_mirror) = self.mirrors.choose(&mut rng()) {
+                let selected_url = selected_mirror.join(url_rest).unwrap();
+                *req.url_mut() = selected_url;
+            }
+        }
+        next.run(req, extensions).await
+    }
+}
+
 struct Retry4xx;
 
 impl RetryableStrategy for Retry4xx {
-    fn handle(&self, res: &Result<reqwest::Response, Error>) -> Option<Retryable> {
+    fn handle(&self, res: &Result<Response, Error>) -> Option<Retryable> {
         match res {
             Ok(success) if success.status().is_client_error() => Some(Retryable::Transient),
             Ok(success) => default_on_request_success(success),
@@ -59,96 +82,6 @@ fn unpack_pixi_install_to_prefix(
     path: impl AsRef<Path>,
     destination: impl AsRef<Path>,
 ) -> Result<()> {
-    let internal_map = HashMap::from([(
-        Url::parse("https://conda.anaconda.org/")?,
-        vec![
-            Mirror {
-                url: Url::parse("https://conda.anaconda.org/")?,
-                no_zstd: false,
-                no_bz2: false,
-                no_jlap: false,
-                max_failures: None,
-            },
-            Mirror {
-                url: Url::parse("https://mirror.nju.edu.cn/anaconda/cloud/")?,
-                no_zstd: false,
-                no_bz2: false,
-                no_jlap: false,
-                max_failures: None,
-            },
-            Mirror {
-                url: Url::parse("https://mirror.nyist.edu.cn/anaconda/cloud/")?,
-                no_zstd: false,
-                no_bz2: false,
-                no_jlap: false,
-                max_failures: None,
-            },
-            Mirror {
-                url: Url::parse("https://mirrors.cqupt.edu.cn/anaconda/cloud/")?,
-                no_zstd: false,
-                no_bz2: false,
-                no_jlap: false,
-                max_failures: None,
-            },
-            Mirror {
-                url: Url::parse("https://mirrors.hit.edu.cn/anaconda/cloud/")?,
-                no_zstd: false,
-                no_bz2: false,
-                no_jlap: false,
-                max_failures: None,
-            },
-            Mirror {
-                url: Url::parse("https://mirrors.lzu.edu.cn/anaconda/cloud/")?,
-                no_zstd: false,
-                no_bz2: false,
-                no_jlap: false,
-                max_failures: None,
-            },
-            Mirror {
-                url: Url::parse("https://mirrors.pku.edu.cn/anaconda/cloud/")?,
-                no_zstd: false,
-                no_bz2: false,
-                no_jlap: false,
-                max_failures: None,
-            },
-            Mirror {
-                url: Url::parse("https://mirrors.shanghaitech.edu.cn/anaconda/cloud/")?,
-                no_zstd: false,
-                no_bz2: false,
-                no_jlap: false,
-                max_failures: None,
-            },
-            Mirror {
-                url: Url::parse("https://mirrors.sustech.edu.cn/anaconda/cloud/")?,
-                no_zstd: false,
-                no_bz2: false,
-                no_jlap: false,
-                max_failures: None,
-            },
-            Mirror {
-                url: Url::parse("https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/")?,
-                no_zstd: false,
-                no_bz2: false,
-                no_jlap: false,
-                max_failures: None,
-            },
-            Mirror {
-                url: Url::parse("https://mirrors.zju.edu.cn/anaconda/cloud/")?,
-                no_zstd: false,
-                no_bz2: false,
-                no_jlap: false,
-                max_failures: None,
-            },
-            Mirror {
-                url: Url::parse("https://prefix.dev/")?,
-                no_zstd: false,
-                no_bz2: false,
-                no_jlap: false,
-                max_failures: None,
-            },
-        ],
-    )]);
-    let mirror_middleware = MirrorMiddleware::from_map(internal_map);
     let timeout = 5 * 60;
     let download_client = reqwest_middleware::ClientBuilder::new(
             reqwest::Client::builder()
@@ -163,7 +96,22 @@ fn unpack_pixi_install_to_prefix(
             ExponentialBackoff::builder().build_with_max_retries(3),
             Retry4xx,
         ))
-        .with(mirror_middleware)
+        .with(RandomMirrorMiddleware {
+            mirrors: vec![
+                Url::parse("https://conda.anaconda.org/")?,
+                Url::parse("https://mirror.nju.edu.cn/anaconda/cloud/")?,
+                Url::parse("https://mirror.nyist.edu.cn/anaconda/cloud/")?,
+                Url::parse("https://mirrors.cqupt.edu.cn/anaconda/cloud/")?,
+                Url::parse("https://mirrors.hit.edu.cn/anaconda/cloud/")?,
+                Url::parse("https://mirrors.lzu.edu.cn/anaconda/cloud/")?,
+                Url::parse("https://mirrors.pku.edu.cn/anaconda/cloud/")?,
+                Url::parse("https://mirrors.shanghaitech.edu.cn/anaconda/cloud/")?,
+                Url::parse("https://mirrors.sustech.edu.cn/anaconda/cloud/")?,
+                Url::parse("https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/")?,
+                Url::parse("https://mirrors.zju.edu.cn/anaconda/cloud/")?,
+                Url::parse("https://prefix.dev/")?,
+            ],
+        })
         .build();
 
     let lockfile = LockFile::from_path(path.as_ref()).map_err(|e| {

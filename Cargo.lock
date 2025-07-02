@@ -1826,6 +1826,7 @@ name = "pyapp"
 version = "0.27.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "base64",
  "bzip2 0.6.0",
  "clap",
@@ -1833,6 +1834,7 @@ dependencies = [
  "flate2",
  "fs4",
  "highway",
+ "http",
  "indicatif",
  "once_cell",
  "os_pipe",
@@ -1840,7 +1842,6 @@ dependencies = [
  "rattler",
  "rattler_conda_types",
  "rattler_lock",
- "rattler_networking",
  "rattler_shell",
  "regex",
  "reqwest",
