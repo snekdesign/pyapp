@@ -108,7 +108,6 @@ fn unpack_pixi_install_to_prefix(
                 Url::parse("https://mirrors.shanghaitech.edu.cn/anaconda/cloud/")?,
                 Url::parse("https://mirrors.sustech.edu.cn/anaconda/cloud/")?,
                 Url::parse("https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/")?,
-                Url::parse("https://mirrors.zju.edu.cn/anaconda/cloud/")?,
                 Url::parse("https://prefix.dev/")?,
             ],
         })
