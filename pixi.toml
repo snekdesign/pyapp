@@ -20,7 +20,7 @@ features = ["rust"]
 no-default-feature = true
 
 [feature.rust.dependencies]
-rust = ">=1.81.0"
+rust = ">=1.89.0"
 
 [feature.rust.target.linux-64.dependencies]
 gcc_linux-64 = "*"
