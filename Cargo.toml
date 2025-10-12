@@ -30,7 +30,7 @@ reqwest-middleware = "0.4.2"
 reqwest-retry = "0.7.0"
 tar = "0.4.43"
 tempfile = "3.20.0"
-tokio = { version = "1.47.0", features = ["rt-multi-thread"] }
+tokio = { version = "1.47.1", features = ["rt-multi-thread"] }
 url = "2.5.4"
 zip = "4.2.0"
 zstd = "0.13.2"
