@@ -158,8 +158,7 @@ fn unpack_pixi_install_to_prefix(
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
-        .build()
-        .unwrap()
+        .build()?
         .block_on(
             Installer::new()
                 .with_download_client(download_client)
