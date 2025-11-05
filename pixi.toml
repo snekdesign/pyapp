@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "pyapp"
 channels = ["conda-forge"]
 platforms = [
