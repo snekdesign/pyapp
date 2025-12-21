@@ -52,10 +52,20 @@ struct Retry4xx;
 
 impl RetryableStrategy for Retry4xx {
     fn handle(&self, res: &Result<Response, Error>) -> Option<Retryable> {
-        match res {
+        let retryable = match res {
             Ok(success) if success.status().is_client_error() => Some(Retryable::Transient),
             Ok(success) => default_on_request_success(success),
             Err(error) => default_on_request_failure(error),
+        };
+        match retryable {
+            None | Some(Retryable::Fatal)
+                if res
+                    .as_ref()
+                    .is_err_and(|err| uv_client::is_transient_network_error(err)) =>
+            {
+                Some(Retryable::Transient)
+            }
+            default => default,
         }
     }
 }
