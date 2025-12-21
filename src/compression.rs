@@ -40,7 +40,9 @@ impl Middleware for RandomMirrorMiddleware {
         if let Some(url_rest) = url_str.strip_prefix("https://conda.anaconda.org/") {
             let url_rest = url_rest.trim_start_matches('/');
             if let Some(selected_mirror) = self.mirrors.choose(&mut rng()) {
-                let selected_url = selected_mirror.join(url_rest).unwrap();
+                let selected_url = selected_mirror
+                    .join(url_rest)
+                    .or_else(|e| Err(Error::Middleware(e.into())))?;
                 *req.url_mut() = selected_url;
             }
         }
