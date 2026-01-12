@@ -31,7 +31,7 @@ reqwest-middleware = { version = "0.4.2", package = "astral-reqwest-middleware" 
 reqwest-retry = { version = "0.8.0", package = "astral-reqwest-retry" }
 tar = "0.4.43"
 tempfile = "3.23.0"
-tokio = { version = "1.48.0", features = ["rt-multi-thread"] }
+tokio = { version = "1.49.0", features = ["rt-multi-thread"] }
 url = "2.5.4"
 uv-client = "0.0.9"
 zip = "6.0.0"
